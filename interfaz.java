@@ -73,24 +73,20 @@ public class interfaz extends javax.swing.JFrame {
                         .addComponent(btnCreate)
                         .addGap(26, 26, 26)
                         .addComponent(btnRead)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(btnUpdate)
+                        .addGap(18, 18, 18)
                         .addComponent(btnDelete))
                     .addGroup(layout.createSequentialGroup()
+                        .addGap(12, 12, 12)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(12, 12, 12)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel1)
-                                    .addComponent(jLabel2))
-                                .addGap(40, 40, 40)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(txtNumber, javax.swing.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
-                                    .addComponent(txtName)))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(193, 193, 193)
-                                .addComponent(btnUpdate)))
-                        .addGap(0, 104, Short.MAX_VALUE)))
-                .addContainerGap())
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel2))
+                        .addGap(40, 40, 40)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(txtNumber, javax.swing.GroupLayout.DEFAULT_SIZE, 168, Short.MAX_VALUE)
+                            .addComponent(txtName))))
+                .addContainerGap(24, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -117,7 +113,7 @@ public class interfaz extends javax.swing.JFrame {
 
     private void btnCreateActionPerformed(java.awt.event.ActionEvent evt) {
         try {
-            String newName = String.valueOf(txtName.getText());
+            String newName = txtName.getText();
             long newNumber = Long.parseLong(txtNumber.getText());
 
             String nameNumberString;
@@ -125,34 +121,37 @@ public class interfaz extends javax.swing.JFrame {
             long number;
 
             File file = new File("agenda_miguel_rojas.txt");
-            if (!file.exists()) {
-                file.createNewFile();
-            }
+            if (!file.exists()) file.createNewFile();
 
             RandomAccessFile raf = new RandomAccessFile(file, "rw");
             boolean found = false;
 
             while (raf.getFilePointer() < raf.length()) {
                 nameNumberString = raf.readLine();
+
+                if (nameNumberString == null || !nameNumberString.contains("!"))
+                    continue;
+
                 String[] lineSplit = nameNumberString.split("!");
                 name = lineSplit[0];
                 number = Long.parseLong(lineSplit[1]);
 
-                if (name.equals(newName) || number == newNumber) {
+                if (name.equals(newName)) {  
                     found = true;
                     break;
                 }
             }
 
             if (!found) {
-                nameNumberString = newName + "!" + String.valueOf(newNumber);
-                raf.writeBytes(nameNumberString);
-                raf.writeBytes(System.lineSeparator());
+                nameNumberString = newName + "!" + newNumber;
+                raf.writeBytes(nameNumberString + System.lineSeparator());
                 System.out.println("Friend added.");
             } else {
-                System.out.println("Name or number already exists.");
+                System.out.println("Name already exists.");
             }
+
             raf.close();
+
         } catch (IOException | NumberFormatException e) {
             System.out.println(e);
         }
@@ -165,20 +164,27 @@ public class interfaz extends javax.swing.JFrame {
             long number;
 
             File file = new File("agenda_miguel_rojas.txt");
-            if (!file.exists()) {
-                file.createNewFile();
-            }
+            if (!file.exists()) file.createNewFile();
 
             RandomAccessFile raf = new RandomAccessFile(file, "rw");
 
             while (raf.getFilePointer() < raf.length()) {
                 nameNumberString = raf.readLine();
+
+                if (nameNumberString == null || !nameNumberString.contains("!"))
+                    continue;
+
                 String[] lineSplit = nameNumberString.split("!");
                 name = lineSplit[0];
                 number = Long.parseLong(lineSplit[1]);
 
-                System.out.println("Friend Name: " + name + "\n" + "Contact Number: " + number + "\n");
+                System.out.println("Friend Name: " + name);
+                System.out.println("Contact Number: " + number);
+                System.out.println();
             }
+
+            raf.close();
+
         } catch (IOException | NumberFormatException e) {
             System.out.println(e);
         }
@@ -186,65 +192,71 @@ public class interfaz extends javax.swing.JFrame {
 
     private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {
         try {
-            String newName = String.valueOf(txtName.getText());
+            String targetName = txtName.getText();
             long newNumber = Long.parseLong(txtNumber.getText());
 
             File file = new File("agenda_miguel_rojas.txt");
-            if (!file.exists()) {
-                file.createNewFile();
-            }
+            if (!file.exists()) file.createNewFile();
 
             RandomAccessFile raf = new RandomAccessFile(file, "rw");
             boolean found = false;
-            String nameNumberString;
-            String name;
 
+            String line;
+
+            // Buscar si existe
             while (raf.getFilePointer() < raf.length()) {
-                nameNumberString = raf.readLine();
-                String[] lineSplit = nameNumberString.split("!");
-                name = lineSplit[0];
-                long number = Long.parseLong(lineSplit[1]);
+                line = raf.readLine();
+                if (line == null || !line.contains("!")) continue;
 
-                if (name.equals(newName) || number == newNumber) {
+                String name = line.substring(0, line.indexOf('!'));
+
+                if (name.equals(targetName)) {
                     found = true;
                     break;
                 }
             }
 
-            if (found) {
-                File tmpFile = new File("temp.txt");
-                RandomAccessFile tmpraf = new RandomAccessFile(tmpFile, "rw");
-                raf.seek(0);
-
-                while (raf.getFilePointer() < raf.length()) {
-                    nameNumberString = raf.readLine();
-                    name = nameNumberString.substring(0, nameNumberString.indexOf('!'));
-
-                    if (name.equals(newName)) {
-                        nameNumberString = name + "!" + String.valueOf(newNumber);
-                    }
-                    tmpraf.writeBytes(nameNumberString);
-                    tmpraf.writeBytes(System.lineSeparator());
-                }
-
-                raf.seek(0);
-                tmpraf.seek(0);
-
-                while (tmpraf.getFilePointer() < tmpraf.length()) {
-                    raf.writeBytes(tmpraf.readLine());
-                    raf.writeBytes(System.lineSeparator());
-                }
-
-                raf.setLength(tmpraf.length());
-                tmpraf.close();
-                raf.close();
-                tmpFile.delete();
-
-                System.out.println("Friend updated.");
-            } else {
+            if (!found) {
                 raf.close();
                 System.out.println("Input name does not exist.");
+                return;
             }
+
+            File tmpFile = new File("temp.txt");
+            RandomAccessFile tmpraf = new RandomAccessFile(tmpFile, "rw");
+
+            raf.seek(0);
+
+            while (raf.getFilePointer() < raf.length()) {
+                line = raf.readLine();
+                if (line == null || !line.contains("!")) continue;
+
+                String name = line.substring(0, line.indexOf('!'));
+
+                if (name.equals(targetName)) {
+                    line = name + "!" + newNumber;
+                }
+
+                tmpraf.writeBytes(line + System.lineSeparator());
+            }
+
+            raf.seek(0);
+            tmpraf.seek(0);
+
+            while (tmpraf.getFilePointer() < tmpraf.length()) {
+                String tempLine = tmpraf.readLine();
+                if (tempLine != null)
+                    raf.writeBytes(tempLine + System.lineSeparator());
+            }
+
+            raf.setLength(tmpraf.length());
+
+            tmpraf.close();
+            raf.close();
+            tmpFile.delete();
+
+            System.out.println("Friend updated.");
+
         } catch (IOException | NumberFormatException e) {
             System.out.println(e);
         }
@@ -252,63 +264,67 @@ public class interfaz extends javax.swing.JFrame {
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {
         try {
-            String newName = String.valueOf(txtName.getText());
+            String targetName = txtName.getText();
 
             File file = new File("agenda_miguel_rojas.txt");
-            if (!file.exists()) {
-                file.createNewFile();
-            }
+            if (!file.exists()) file.createNewFile();
 
             RandomAccessFile raf = new RandomAccessFile(file, "rw");
             boolean found = false;
-            String nameNumberString;
-            String name;
+            String line;
 
+            // Buscar si existe
             while (raf.getFilePointer() < raf.length()) {
-                nameNumberString = raf.readLine();
-                String[] lineSplit = nameNumberString.split("!");
-                name = lineSplit[0];
+                line = raf.readLine();
+                if (line == null || !line.contains("!")) continue;
 
-                if (name.equals(newName)) {
+                String name = line.substring(0, line.indexOf('!'));
+
+                if (name.equals(targetName)) {
                     found = true;
                     break;
                 }
             }
 
-            if (found) {
-                File tmpFile = new File("temp.txt");
-                RandomAccessFile tmpraf = new RandomAccessFile(tmpFile, "rw");
-                raf.seek(0);
-
-                while (raf.getFilePointer() < raf.length()) {
-                    nameNumberString = raf.readLine();
-                    name = nameNumberString.substring(0, nameNumberString.indexOf('!'));
-
-                    if (name.equals(newName)) {
-                        continue;
-                    }
-                    tmpraf.writeBytes(nameNumberString);
-                    tmpraf.writeBytes(System.lineSeparator());
-                }
-
-                raf.seek(0);
-                tmpraf.seek(0);
-
-                while (tmpraf.getFilePointer() < tmpraf.length()) {
-                    raf.writeBytes(tmpraf.readLine());
-                    raf.writeBytes(System.lineSeparator());
-                }
-
-                raf.setLength(tmpraf.length());
-                tmpraf.close();
-                raf.close();
-                tmpFile.delete();
-
-                System.out.println("Friend deleted.");
-            } else {
+            if (!found) {
                 raf.close();
                 System.out.println("Input name does not exist.");
+                return;
             }
+
+            File tmpFile = new File("temp.txt");
+            RandomAccessFile tmpraf = new RandomAccessFile(tmpFile, "rw");
+
+            raf.seek(0);
+
+            while (raf.getFilePointer() < raf.length()) {
+                line = raf.readLine();
+                if (line == null || !line.contains("!")) continue;
+
+                String name = line.substring(0, line.indexOf('!'));
+
+                if (name.equals(targetName)) continue;
+
+                tmpraf.writeBytes(line + System.lineSeparator());
+            }
+
+            raf.seek(0);
+            tmpraf.seek(0);
+
+            while (tmpraf.getFilePointer() < tmpraf.length()) {
+                String tempLine = tmpraf.readLine();
+                if (tempLine != null)
+                    raf.writeBytes(tempLine + System.lineSeparator());
+            }
+
+            raf.setLength(tmpraf.length());
+
+            tmpraf.close();
+            raf.close();
+            tmpFile.delete();
+
+            System.out.println("Friend deleted.");
+
         } catch (IOException e) {
             System.out.println(e);
         }
