@@ -4,7 +4,7 @@
  * Año: 2025
  */
 
-package com.mycompany.poo_t6;
+package com.mycompany.poo_t5;
 
 import java.io.File;
 import java.io.IOException;
